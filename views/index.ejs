@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Uygar</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+
+<body>
+
+
+
+
+    <video id="myvideoTag" autoplay></video>
+    <video id="theirvideoTag" autoplay></video>
+
+    <div>
+        <label>Firstname</label><input id="myName" type="text" />
+        <label>Message</label><input id="myMessage" type="text" />
+        <input id="sendMessage" type="submit" />
+        <div id="chatArea">This is all the messages</br></div>
+        <div id="signalingArea">Signaling Messages</br></div>
+    </div>
+
+
+    <script>
+
+        var myvideoArea = document.querySelector("#myvideoTag");
+        var theirvideoArea = document.querySelector("#theirvideoTag");
+
+
+        var myName = document.querySelector("#myName");
+        var myMessage = document.querySelector("#myMessage");
+        var sendMessage = document.querySelector("#sendMessage");
+        var chatArea = document.querySelector("#chatArea");
+        var signalingArea = document.querySelector("#signalingArea");
+        var ROOM = "chat";
+        var SIGNAL_ROOM ="signal_room";
+
+
+
+
+
+        io = io.connect();
+        io.emit('ready', {"chat_room": ROOM, "signal_room": SIGNAL_ROOM});
+
+        io.emit('signal',{"type":"user_here", "message":"ready for call?", "room":SIGNAL_ROOM} );
+
+        io.on('signaling_message', function (data) {
+            displaySignalMessage("Signal received:" + data.type);
+
+        });
+
+        io.on('annouce', function (data) {
+            displayMessage(data.message);
+
+        });
+
+        io.on('message', function (data) {
+            displayMessage(data.author + ": " + data.message);
+
+        });
+
+        function displayMessage(message) {
+            chatArea.innerHTML = chatArea.innerHTML + "<br/>" + message;
+        }
+
+        function displaySignalMessage(message) {
+            signalingArea.innerHTML = signalingArea.innerHTML + "<br/>" + message;
+        }
+
+
+        sendMessage.addEventListener('click', function (ev) {
+
+            io.emit('send', { "author": myName.value, "message": myMessage.value, "room": ROOM });
+            ev.preventDefault();
+
+        }, false);
+
+
+
+
+
+
+    </script>
+
+</body>
+
+</html>
